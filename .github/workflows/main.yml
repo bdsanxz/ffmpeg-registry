@@ -72,19 +72,8 @@ jobs:
           #   os: ubuntu-latest
           # - target-os: android
           #   os: ubuntu-latest
-        exclude:
-          # Windows arm is obsolete
-          # - target-os: windows
-          #   target-arch: arm
-          # Linux arm is obsolete
-          # - target-os: linux
-          #   target-arch: arm
-          # macOS arm does not exist
-          # - target-os: osx
-          #   target-arch: arm
-          # macOS x86 is obsolete
-          # - target-os: osx
-          #   target-arch: x86
+        # NOTE: when windows/linux/android legs are enabled, add an
+        # `exclude:` list here (windows+arm, linux+arm, osx+arm, osx+x86).
 
     runs-on: ${{ matrix.os }}
     permissions:
