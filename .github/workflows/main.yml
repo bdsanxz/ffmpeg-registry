@@ -45,8 +45,8 @@ jobs:
       stale: ${{ inputs.skip-version-check || steps.latest-ffmpeg.outputs.version != steps.latest-release.outputs.version }}
 
   # Build FFmpeg for all supported platforms.
-  # macOS legs first; extend the matrix with windows/linux legs
-  # (same shape) when those platforms are needed.
+  # macOS legs first; extend the matrix with windows/linux/android
+  # legs (same shape) when those platforms are needed.
   pack:
     needs: version
 
@@ -65,11 +65,26 @@ jobs:
           # Determine the runner OS based on the target OS
           - target-os: osx
             os: macos-latest
-          # Future legs (same shape, add when needed):
+          # Future legs (same shape, uncomment to enable):
           # - target-os: windows
           #   os: windows-latest
           # - target-os: linux
           #   os: ubuntu-latest
+          # - target-os: android
+          #   os: ubuntu-latest
+        exclude:
+          # Windows arm is obsolete
+          # - target-os: windows
+          #   target-arch: arm
+          # Linux arm is obsolete
+          # - target-os: linux
+          #   target-arch: arm
+          # macOS arm does not exist
+          # - target-os: osx
+          #   target-arch: arm
+          # macOS x86 is obsolete
+          # - target-os: osx
+          #   target-arch: x86
 
     runs-on: ${{ matrix.os }}
     permissions:
@@ -151,9 +166,11 @@ jobs:
       matrix:
         target-os:
           - osx
+          # Future: windows, linux, android (with matching excludes)
         target-arch:
           - arm64
           - x64
+          # Future: arm, x86 (android and legacy legs)
 
     runs-on: ubuntu-latest
     permissions:

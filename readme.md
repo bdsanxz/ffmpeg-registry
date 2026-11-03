@@ -8,13 +8,17 @@ repository. Builds are performed using [vcpkg](https://github.com/microsoft/vcpk
 
 Currently supported targets:
 
-|                     | macOS | Windows | Linux |
-| ------------------- | ----- | ------- | ----- |
-| `arm64` / `aarch64` | ✅    | planned | planned |
-| `x64` / `x86_64`    | ✅    | planned | planned |
+|                            | macOS | Windows | Linux   | Android            |
+| -------------------------- | ----- | ------- | ------- | ------------------ |
+| `arm64` / `aarch64`        | ✅    | planned | planned | planned (`arm64-v8a`) |
+| `arm`                      | ❌    | —       | —       | planned (`armeabi-v7a`) |
+| `x64` / `x86_64` / `amd64` | ✅    | planned | planned | planned            |
+| `x86` / `i386`             | ❌    | planned | planned | planned            |
 
-Windows and Linux legs follow the same matrix shape (see the commented
-rows in `.github/workflows/main.yml`) and are added when needed.
+Windows, Linux, and Android legs follow the same matrix shape (see the
+commented rows in `.github/workflows/main.yml`) and are added when
+needed. Triplets and dependency scripts for those platforms are
+already in the repo.
 
 ## Download
 
