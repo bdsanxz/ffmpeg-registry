@@ -8,17 +8,20 @@ repository. Builds are performed using [vcpkg](https://github.com/microsoft/vcpk
 
 Currently supported targets:
 
-|                            | macOS | Windows | Linux   | Android            |
-| -------------------------- | ----- | ------- | ------- | ------------------ |
-| `arm64` / `aarch64`        | ✅    | planned | planned | ✅ (`arm64-v8a`) |
-| `arm`                      | ❌    | —       | —       | planned (`armeabi-v7a`) |
-| `x64` / `x86_64` / `amd64` | ✅    | ✅      | ✅      | ✅                 |
-| `x86` / `i386`             | ❌    | planned | planned | planned            |
+|                            | macOS | Windows | Linux   | Android            | iOS          |
+| -------------------------- | ----- | ------- | ------- | ------------------ | ------------ |
+| `arm64` / `aarch64`        | ✅    | planned | planned | ✅ (`arm64-v8a`) | ✅ (device+sim) |
+| `arm`                      | ❌    | —       | —       | planned (`armeabi-v7a`) | —       |
+| `x64` / `x86_64` / `amd64` | ✅    | ✅      | ✅      | ✅                 | ✅ (sim)     |
+| `x86` / `i386`             | ❌    | planned | planned | planned            | ❌           |
 
 Windows, Linux, and Android legs follow the same matrix shape (see the
 commented rows in `.github/workflows/main.yml`) and are added when
 needed. Triplets and dependency scripts for those platforms are
 already in the repo.
+
+iOS ships separately as `FFmpeg.xcframework` (device plus simulator
+slices with a native bridge); see [`ios/`](ios/README.md).
 
 ## Download
 

@@ -1,0 +1,70 @@
+name: ios
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ios/**
+      - .github/workflows/ios.yml
+
+jobs:
+  build:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout self
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # 7.0.1
+
+      - name: Download source
+        run: ios/scripts/download-source.sh
+
+      - name: Install dependencies
+        run: brew install nasm
+
+      - name: Build device libraries
+        run: ios/scripts/build-arch.sh ios-arm64
+
+      - name: Build simulator libraries
+        run: |
+          ios/scripts/build-arch.sh ios-sim-arm64
+          ios/scripts/build-arch.sh ios-sim-x86_64
+
+      - name: Compile native bridge
+        run: |
+          SDKROOT="$(xcrun -sdk iphoneos --show-sdk-path)"
+          clang -c ios/native/bridge.c -o /tmp/bridge.o \
+            -isysroot "$SDKROOT" -arch arm64 \
+            -mios-version-min=15.0 \
+            -Iios/build/ios-arm64/include -Wall
+          swiftc -parse ios/native/MediaEngine.swift
+
+      - name: Create XCFramework
+        run: ios/scripts/create-xcframework.sh
+
+      - name: Verify
+        run: ios/scripts/verify.sh
+
+      - name: Manifest
+        run: ios/scripts/manifest.sh
+
+      - name: Publish release assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="$(cat ios/VERSION)"
+          gh release view "$VERSION" \
+            --repo ${{ github.event.repository.full_name }} > /dev/null 2>&1 ||
+          gh release create "$VERSION" \
+            --title "$VERSION" \
+            --notes "Built on $(date +'%Y-%m-%d')" \
+            --repo ${{ github.event.repository.full_name }}
+          gh release upload "$VERSION" \
+            ios/dist/FFmpeg.xcframework.zip \
+            ios/dist/ios-manifest.json \
+            ios/dist/ios-checksums.txt \
+            --clobber \
+            --repo ${{ github.event.repository.full_name }}
