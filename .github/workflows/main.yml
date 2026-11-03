@@ -59,7 +59,8 @@ jobs:
         target-os:
           - osx
           - linux
-          # Future: windows, android
+          - windows
+          # Future: android
         target-arch:
           - arm64
           - x64
@@ -69,9 +70,9 @@ jobs:
             os: macos-latest
           - target-os: linux
             os: ubuntu-latest
+          - target-os: windows
+            os: windows-latest
           # Future legs (same shape, uncomment to enable):
-          # - target-os: windows
-          #   os: windows-latest
           # - target-os: android
           #   os: ubuntu-latest
         exclude:
@@ -79,6 +80,9 @@ jobs:
           # when cross-build is configured. Other future excludes:
           # windows+arm, linux+arm, osx+arm, osx+x86.
           - target-os: linux
+            target-arch: arm64
+          # windows/arm64 needs a cross toolchain (runner is x64).
+          - target-os: windows
             target-arch: arm64
 
     runs-on: ${{ matrix.os }}
@@ -164,7 +168,8 @@ jobs:
         target-os:
           - osx
           - linux
-          # Future: windows, android (with matching excludes)
+          - windows
+          # Future: android (with matching excludes)
         target-arch:
           - arm64
           - x64
@@ -172,6 +177,9 @@ jobs:
         exclude:
           # Matches pack: linux/arm64 has no cross toolchain yet.
           - target-os: linux
+            target-arch: arm64
+          # Matches pack: windows/arm64 has no cross toolchain yet.
+          - target-os: windows
             target-arch: arm64
 
     runs-on: ubuntu-latest
