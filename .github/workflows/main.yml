@@ -65,15 +65,19 @@ jobs:
           # Determine the runner OS based on the target OS
           - target-os: osx
             os: macos-latest
+          - target-os: linux
+            os: ubuntu-latest
           # Future legs (same shape, uncomment to enable):
           # - target-os: windows
           #   os: windows-latest
-          # - target-os: linux
-          #   os: ubuntu-latest
           # - target-os: android
           #   os: ubuntu-latest
-        # NOTE: when windows/linux/android legs are enabled, add an
-        # `exclude:` list here (windows+arm, linux+arm, osx+arm, osx+x86).
+        exclude:
+          # linux/arm64 needs a cross toolchain (runner is x64); enable
+          # when cross-build is configured. Other future excludes:
+          # windows+arm, linux+arm, osx+arm, osx+x86.
+          - target-os: linux
+            target-arch: arm64
 
     runs-on: ${{ matrix.os }}
     permissions:
@@ -140,6 +144,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >
+          gh release view ${{ needs.version.outputs.version }}
+          --repo ${{ github.event.repository.full_name }} > /dev/null 2>&1 ||
           gh release create ${{ needs.version.outputs.version }}
           --title ${{ needs.version.outputs.version }}
           --notes "Built on $(date +'%Y-%m-%d')"
@@ -155,11 +161,16 @@ jobs:
       matrix:
         target-os:
           - osx
-          # Future: windows, linux, android (with matching excludes)
+          - linux
+          # Future: windows, android (with matching excludes)
         target-arch:
           - arm64
           - x64
           # Future: arm, x86 (android and legacy legs)
+        exclude:
+          # Matches pack: linux/arm64 has no cross toolchain yet.
+          - target-os: linux
+            target-arch: arm64
 
     runs-on: ubuntu-latest
     permissions:
