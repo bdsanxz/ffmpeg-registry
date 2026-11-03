@@ -204,4 +204,5 @@ jobs:
         run: >
           gh release upload ${{ needs.version.outputs.version }}
           ffmpeg-${{ matrix.target-os }}-${{ matrix.target-arch }}.zip
+          --clobber
           --repo ${{ github.event.repository.full_name }}
