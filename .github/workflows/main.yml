@@ -60,7 +60,7 @@ jobs:
           - osx
           - linux
           - windows
-          # Future: android
+          - android
         target-arch:
           - arm64
           - x64
@@ -72,9 +72,8 @@ jobs:
             os: ubuntu-latest
           - target-os: windows
             os: windows-latest
-          # Future legs (same shape, uncomment to enable):
-          # - target-os: android
-          #   os: ubuntu-latest
+          - target-os: android
+            os: ubuntu-latest
         exclude:
           # linux/arm64 needs a cross toolchain (runner is x64); enable
           # when cross-build is configured. Other future excludes:
@@ -108,6 +107,22 @@ jobs:
 
       - name: Install dependencies
         run: ${{ runner.os == 'Windows' && 'self/install-deps.ps1' || 'self/install-deps.sh' }}
+
+      - name: Setup Android NDK
+        if: ${{ matrix.target-os == 'android' }}
+        run: |
+          NDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}/ndk"
+          if [ ! -d "${ANDROID_NDK_HOME:-x}" ]; then
+            if [ -d "$NDK_ROOT" ] && [ -n "$(ls -A "$NDK_ROOT")" ]; then
+              echo "ANDROID_NDK_HOME=$NDK_ROOT/$(ls "$NDK_ROOT" | sort -V | tail -1)" >> $GITHUB_ENV
+            else
+              SDM="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+              yes | "$SDM" --licenses > /dev/null
+              NDK_PKG="$("$SDM" --list 2>/dev/null | grep -oE 'ndk;[0-9.]+' | sort -Vu -t';' -k2 | tail -1)"
+              "$SDM" "$NDK_PKG"
+              echo "ANDROID_NDK_HOME=$NDK_ROOT/${NDK_PKG#ndk;}" >> $GITHUB_ENV
+            fi
+          fi
 
       - name: Build FFmpeg
         run: >
@@ -169,7 +184,7 @@ jobs:
           - osx
           - linux
           - windows
-          # Future: android (with matching excludes)
+          - android
         target-arch:
           - arm64
           - x64

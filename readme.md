@@ -10,9 +10,9 @@ Currently supported targets:
 
 |                            | macOS | Windows | Linux   | Android            |
 | -------------------------- | ----- | ------- | ------- | ------------------ |
-| `arm64` / `aarch64`        | ✅    | planned | planned | planned (`arm64-v8a`) |
+| `arm64` / `aarch64`        | ✅    | planned | planned | ✅ (`arm64-v8a`) |
 | `arm`                      | ❌    | —       | —       | planned (`armeabi-v7a`) |
-| `x64` / `x86_64` / `amd64` | ✅    | ✅      | ✅      | planned            |
+| `x64` / `x86_64` / `amd64` | ✅    | ✅      | ✅      | ✅                 |
 | `x86` / `i386`             | ❌    | planned | planned | planned            |
 
 Windows, Linux, and Android legs follow the same matrix shape (see the
