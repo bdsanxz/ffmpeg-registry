@@ -58,6 +58,8 @@ jobs:
       matrix:
         target-os:
           - osx
+          - linux
+          # Future: windows, android
         target-arch:
           - arm64
           - x64
