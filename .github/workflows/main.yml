@@ -45,8 +45,8 @@ jobs:
       stale: ${{ inputs.skip-version-check || steps.latest-ffmpeg.outputs.version != steps.latest-release.outputs.version }}
 
   # Build FFmpeg for all supported platforms.
-  # Framesmith v1 consumes macOS builds; extend the matrix with
-  # windows/linux legs (same shape) when Sprint 25-27 begins.
+  # macOS legs first; extend the matrix with windows/linux legs
+  # (same shape) when those platforms are needed.
   pack:
     needs: version
 
@@ -65,7 +65,7 @@ jobs:
           # Determine the runner OS based on the target OS
           - target-os: osx
             os: macos-latest
-          # Future legs (parity shape, disabled for v1):
+          # Future legs (same shape, add when needed):
           # - target-os: windows
           #   os: windows-latest
           # - target-os: linux

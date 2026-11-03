@@ -1,7 +1,7 @@
 # ffmpeg-registry
 
 **ffmpeg-registry** is an automation workflow that produces static builds of
-[FFmpeg](https://ffmpeg.org) for the platforms Framesmith supports.
+[FFmpeg](https://ffmpeg.org) for an array of different platforms.
 Ready-to-download assets for each target live in the
 [releases](https://github.com/bdsanxz/ffmpeg-registry/releases) of this
 repository. Builds are performed using [vcpkg](https://github.com/microsoft/vcpkg).
@@ -14,7 +14,7 @@ Currently supported targets:
 | `x64` / `x86_64`    | ✅    | planned | planned |
 
 Windows and Linux legs follow the same matrix shape (see the commented
-rows in `.github/workflows/main.yml`) and land with Sprint 25-27.
+rows in `.github/workflows/main.yml`) and are added when needed.
 
 ## Download
 
@@ -28,11 +28,11 @@ https://github.com/bdsanxz/ffmpeg-registry/releases/download/${VERSION}/ffmpeg-$
 ```
 
 Each archive carries `ffmpeg` (plus `ffprobe`/`ffplay` where the platform
-builds them) at the top level. Framesmith resolves the newest release
-through the GitHub API, verifies the publisher-reported archive digest,
-then verifies the extracted binary (`-version` plus required encoders)
-before executing it. No other terms apply to these binaries beyond their
-own open-source licenses.
+builds them) at the top level. Consumers should verify the
+publisher-reported archive digest from the release metadata, then verify
+the extracted binary (`-version` plus required encoders) before
+executing it. No terms apply to these binaries beyond their own
+open-source licenses.
 
 ## How a release is made
 
