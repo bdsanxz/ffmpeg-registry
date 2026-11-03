@@ -1,0 +1,76 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "ffmpeg-registry",
+  "dependencies": [
+    {
+      "name": "ffmpeg",
+      "default-features": false,
+      "features": [
+        "ffmpeg",
+        {
+          "name": "ffplay",
+          "platform": "!android"
+        },
+        {
+          "name": "ffprobe",
+          "platform": "!android"
+        },
+        "nonfree",
+        {
+          "name": "aom",
+          "platform": "!(windows & x86)"
+        },
+        {
+          "name": "amf",
+          "platform": "!osx"
+        },
+        "ass",
+        "avcodec",
+        "avdevice",
+        "avfilter",
+        "avformat",
+        "bzip2",
+        "dav1d",
+        "freetype",
+        "fribidi",
+        "iconv",
+        "ilbc",
+        "lzma",
+        "modplug",
+        "mp3lame",
+        {
+          "name": "nvcodec",
+          "platform": "!(windows & arm64) & !osx & !android"
+        },
+        "opencl",
+        {
+          "name": "opengl",
+          "platform": "!(linux & x86) & !(linux & arm64) & !android"
+        },
+        "openjpeg",
+        "openmpt",
+        "openssl",
+        "opus",
+        "sdl2",
+        "snappy",
+        "soxr",
+        "speex",
+        "srt",
+        "ssh",
+        "swresample",
+        "swscale",
+        "theora",
+        "vorbis",
+        "vpx",
+        "webp",
+        "x264",
+        {
+          "name": "x265",
+          "platform": "!(windows & arm64)"
+        },
+        "xml2",
+        "zlib"
+      ]
+    }
+  ]
+}

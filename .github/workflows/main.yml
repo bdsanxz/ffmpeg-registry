@@ -1,0 +1,188 @@
+name: main
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip-version-check:
+        type: boolean
+        description: Skip version check
+        required: false
+  schedule:
+    - cron: "0 0 1 * *"
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # Check if the latest version of FFmpeg in vcpkg is newer than the latest release
+  version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout vcpkg
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # 7.0.1
+        with:
+          repository: microsoft/vcpkg
+          ref: master
+
+      - name: Get latest FFmpeg package
+        id: latest-ffmpeg
+        run: echo "version=$(cat ports/ffmpeg/vcpkg.json | jq -r '.version')" >> $GITHUB_OUTPUT
+
+      - name: Get latest release
+        id: latest-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "version=$(gh release view --json tagName --jq .tagName --repo ${{ github.event.repository.full_name }} 2>/dev/null || echo none)" >> $GITHUB_OUTPUT
+
+    outputs:
+      version: ${{ steps.latest-ffmpeg.outputs.version }}
+      stale: ${{ inputs.skip-version-check || steps.latest-ffmpeg.outputs.version != steps.latest-release.outputs.version }}
+
+  # Build FFmpeg for all supported platforms.
+  # Framesmith v1 consumes macOS builds; extend the matrix with
+  # windows/linux legs (same shape) when Sprint 25-27 begins.
+  pack:
+    needs: version
+
+    # Job outputs are passed as strings, so we need to convert the value to an actual boolean
+    if: ${{ fromJson(needs.version.outputs.stale) }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target-os:
+          - osx
+        target-arch:
+          - arm64
+          - x64
+        include:
+          # Determine the runner OS based on the target OS
+          - target-os: osx
+            os: macos-latest
+          # Future legs (parity shape, disabled for v1):
+          # - target-os: windows
+          #   os: windows-latest
+          # - target-os: linux
+          #   os: ubuntu-latest
+
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      actions: write
+
+    steps:
+      - name: Checkout self
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # 7.0.1
+        with:
+          path: self/
+
+      - name: Checkout vcpkg
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # 7.0.1
+        with:
+          repository: microsoft/vcpkg
+          ref: master
+          path: vcpkg/
+
+      - name: Bootstrap vcpkg
+        run: ${{ runner.os == 'Windows' && 'vcpkg/bootstrap-vcpkg.bat' || 'vcpkg/bootstrap-vcpkg.sh' }}
+
+      - name: Install dependencies
+        run: ${{ runner.os == 'Windows' && 'self/install-deps.ps1' || 'self/install-deps.sh' }}
+
+      - name: Build FFmpeg
+        run: >
+          vcpkg/vcpkg install
+          --recurse
+          --triplet ${{ matrix.target-arch }}-${{ matrix.target-os }}
+          --x-manifest-root self/
+
+      - name: Upload build logs
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # 7.0.2
+        # Disabled: sometimes globbing fails on some of the produced directories
+        if: ${{ false }} # ${{ !cancelled() }}
+        with:
+          name: logs-${{ matrix.target-os }}-${{ matrix.target-arch }}
+          path: vcpkg/buildtrees/**/*.log
+          if-no-files-found: ignore
+
+      - name: Upload build output
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # 7.0.2
+        with:
+          name: ffmpeg-${{ matrix.target-os }}-${{ matrix.target-arch }}
+          path: self/vcpkg_installed/${{ matrix.target-arch }}-${{ matrix.target-os }}/tools/ffmpeg/
+          if-no-files-found: error
+
+  # Create a new release with the tag matching the FFmpeg version
+  release:
+    needs:
+      - version
+      - pack
+
+    # Only release when running on main
+    if: ${{ github.ref_type == 'branch' && github.ref_name == 'main' }}
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          gh release create ${{ needs.version.outputs.version }}
+          --title ${{ needs.version.outputs.version }}
+          --notes "Built on $(date +'%Y-%m-%d')"
+          --repo ${{ github.event.repository.full_name }}
+
+  # Upload the built artifacts to the release
+  deploy:
+    needs:
+      - version
+      - release
+
+    strategy:
+      matrix:
+        target-os:
+          - osx
+        target-arch:
+          - arm64
+          - x64
+
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+
+    steps:
+      - name: Download build output
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # 8.0.2
+        with:
+          name: ffmpeg-${{ matrix.target-os }}-${{ matrix.target-arch }}
+          path: ffmpeg/
+
+      - name: Set permissions
+        if: ${{ matrix.target-os != 'windows' }}
+        run: |
+          chmod +x ffmpeg/ffmpeg
+          [ -f ffmpeg/ffplay ] && chmod +x ffmpeg/ffplay || true
+          [ -f ffmpeg/ffprobe ] && chmod +x ffmpeg/ffprobe || true
+
+      - name: Create package
+        # Change into the artifacts directory to avoid including the directory itself in the zip archive
+        working-directory: ffmpeg/
+        run: zip -r ../ffmpeg-${{ matrix.target-os }}-${{ matrix.target-arch }}.zip .
+
+      - name: Upload release assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          gh release upload ${{ needs.version.outputs.version }}
+          ffmpeg-${{ matrix.target-os }}-${{ matrix.target-arch }}.zip
+          --repo ${{ github.event.repository.full_name }}
