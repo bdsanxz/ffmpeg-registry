@@ -131,6 +131,15 @@ jobs:
           --triplet ${{ matrix.target-arch }}-${{ matrix.target-os }}
           --x-manifest-root self/
 
+      - name: Verify capabilities (Windows)
+        if: ${{ runner.os == 'Windows' && matrix.target-os != 'android' }}
+        shell: pwsh
+        run: ./self/scripts/verify-capabilities.ps1 -FFmpegPath ./self/vcpkg_installed/${{ matrix.target-arch }}-${{ matrix.target-os }}/tools/ffmpeg/ffmpeg.exe
+
+      - name: Verify capabilities (Unix)
+        if: ${{ runner.os != 'Windows' && matrix.target-os != 'android' }}
+        run: ./self/scripts/verify-capabilities.sh ./self/vcpkg_installed/${{ matrix.target-arch }}-${{ matrix.target-os }}/tools/ffmpeg/ffmpeg
+
       - name: Upload build logs
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # 7.0.2
         # Disabled: sometimes globbing fails on some of the produced directories

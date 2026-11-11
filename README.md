@@ -23,6 +23,13 @@ already in the repo.
 iOS ships separately as `FFmpeg.xcframework` (device plus simulator
 slices with a native bridge); see [`ios/`](ios/README.md).
 
+## Capabilities
+
+All static desktop/Android builds share one manifest. See
+[`CAPABILITIES.md`](CAPABILITIES.md) for which builds carry 10/12-bit
+`libx265`, `volumedetect`, `loudnorm` and `eval`, how to verify a binary
+(`scripts/verify-capabilities.sh`), and the Sprint 25 HDR pin.
+
 ## Download
 
 - **[Latest version](https://github.com/bdsanxz/ffmpeg-registry/releases/latest)**
@@ -40,6 +47,12 @@ publisher-reported archive digest from the release metadata, then verify
 the extracted binary (`-version` plus required encoders) before
 executing it. No terms apply to these binaries beyond their own
 open-source licenses.
+
+## Verify a build
+```sh
+scripts/verify-capabilities.sh ./ffmpeg
+# Windows: powershell -ExecutionPolicy Bypass -File scripts/verify-capabilities.ps1 -FFmpegPath .\ffmpeg.exe
+```
 
 ## How a release is made
 
