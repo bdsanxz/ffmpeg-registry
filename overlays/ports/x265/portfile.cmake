@@ -128,7 +128,7 @@ if(VCPKG_TARGET_IS_WINDOWS)
 else()
     set(X265_DEST_12 "libx265_main12.a")
 endif()
-vcpkg_execute_required_process(COMMAND "${CMAKE_COMMAND}" -E copy "${X265_LIB_12}" "${X265_TEMP_DIR}/${X265_DEST_12}" LOGNAME copy-12bit)
+vcpkg_execute_required_process(COMMAND "${CMAKE_COMMAND}" -E copy "${X265_LIB_12}" "${X265_TEMP_DIR}/${X265_DEST_12}" WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}" LOGNAME copy-12bit)
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}")
 
 # 10-bit (Main10)
@@ -153,7 +153,7 @@ if(VCPKG_TARGET_IS_WINDOWS)
 else()
     set(X265_DEST_10 "libx265_main10.a")
 endif()
-vcpkg_execute_required_process(COMMAND "${CMAKE_COMMAND}" -E copy "${X265_LIB_10}" "${X265_TEMP_DIR}/${X265_DEST_10}" LOGNAME copy-10bit)
+vcpkg_execute_required_process(COMMAND "${CMAKE_COMMAND}" -E copy "${X265_LIB_10}" "${X265_TEMP_DIR}/${X265_DEST_10}" WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}" LOGNAME copy-10bit)
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}")
 
 # 8-bit (Main) - links the other two, provides CLI when requested
@@ -195,7 +195,7 @@ else()
 endif()
 # Save the 8-bit library before merging
 set(X265_MAIN_LIB_PATH "${X265_TEMP_DIR}/${X265_DEST_8}")
-vcpkg_execute_required_process(COMMAND "${CMAKE_COMMAND}" -E copy "${X265_LIB_8}" "${X265_MAIN_LIB_PATH}" LOGNAME copy-8bit)
+vcpkg_execute_required_process(COMMAND "${CMAKE_COMMAND}" -E copy "${X265_LIB_8}" "${X265_MAIN_LIB_PATH}" WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}" LOGNAME copy-8bit)
 
 # Merge the three static archives into the final installed library.
 # The installed 8-bit lib is currently at ${X265_LIB_8}; we replace it with the merged result.
@@ -209,6 +209,7 @@ if(VCPKG_TARGET_IS_WINDOWS)
     vcpkg_execute_required_process(
         COMMAND "${LIB_EXE}" /NOLOGO /OUT:"${X265_LIB_8}"
             "${X265_MAIN_LIB_PATH}" "${X265_TEMP_DIR}/${X265_DEST_10}" "${X265_TEMP_DIR}/${X265_DEST_12}"
+        WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}"
         LOGNAME merge-x265
     )
 else()
@@ -218,6 +219,7 @@ else()
         vcpkg_execute_required_process(
             COMMAND "${LIBTOOL_EXE}" -static -o "${X265_MERGED}"
                 "${X265_MAIN_LIB_PATH}" "${X265_TEMP_DIR}/${X265_DEST_10}" "${X265_TEMP_DIR}/${X265_DEST_12}"
+            WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}"
             LOGNAME merge-x265
         )
     else()
@@ -229,14 +231,17 @@ else()
         # We add them sequentially to preserve all symbols.
         vcpkg_execute_required_process(
             COMMAND "${AR_EXE}" rcs "${X265_MERGED}" "${X265_MAIN_LIB_PATH}"
+            WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}"
             LOGNAME merge-x265
         )
         vcpkg_execute_required_process(
             COMMAND "${AR_EXE}" rcs "${X265_MERGED}" "${X265_TEMP_DIR}/${X265_DEST_10}"
+            WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}"
             LOGNAME merge-x265
         )
         vcpkg_execute_required_process(
             COMMAND "${AR_EXE}" rcs "${X265_MERGED}" "${X265_TEMP_DIR}/${X265_DEST_12}"
+            WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}"
             LOGNAME merge-x265
         )
         # ar on some platforms writes the archive with members; ensure it is not empty
@@ -245,7 +250,7 @@ else()
     # Ensure the final path matches the originally installed lib name
     if(NOT X265_LIB_8 STREQUAL X265_MERGED)
         # Some toolchains install as libx265.a only; keep both consistent
-        vcpkg_execute_required_process(COMMAND "${CMAKE_COMMAND}" -E copy "${X265_MERGED}" "${X265_LIB_8}" LOGNAME copy-merged)
+        vcpkg_execute_required_process(COMMAND "${CMAKE_COMMAND}" -E copy "${X265_MERGED}" "${X265_LIB_8}" WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}" LOGNAME copy-merged)
     endif()
 endif()
 
