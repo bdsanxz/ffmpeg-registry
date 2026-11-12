@@ -223,25 +223,12 @@ else()
             LOGNAME merge-x265
         )
     else()
-        # Linux / Android (GNU ar). Use "ar rcs" additive merge to avoid stdin handling.
+        # Linux / Android (GNU ar). Use single "ar rcs" + ranlib to merge.
         find_program(AR_EXE NAMES ar llvm-ar REQUIRED)
         find_program(RANLIB_EXE NAMES ranlib llvm-ranlib REQUIRED)
-        # If the merged file already exists (from 8-bit install), replace it.
         file(REMOVE "${X265_MERGED}")
-        # GNU ar: "ar rcs" with multiple archives adds their members.
-        # We add them sequentially to preserve all symbols.
         vcpkg_execute_required_process(
-            COMMAND "${AR_EXE}" rcs "${X265_MERGED}" "${X265_MAIN_LIB_PATH}"
-            WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}"
-            LOGNAME merge-x265
-        )
-        vcpkg_execute_required_process(
-            COMMAND "${AR_EXE}" rcs "${X265_MERGED}" "${X265_TEMP_DIR}/${X265_DEST_10}"
-            WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}"
-            LOGNAME merge-x265
-        )
-        vcpkg_execute_required_process(
-            COMMAND "${AR_EXE}" rcs "${X265_MERGED}" "${X265_TEMP_DIR}/${X265_DEST_12}"
+            COMMAND "${AR_EXE}" rcs "${X265_MERGED}" "${X265_MAIN_LIB_PATH}" "${X265_TEMP_DIR}/${X265_DEST_10}" "${X265_TEMP_DIR}/${X265_DEST_12}"
             WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}"
             LOGNAME merge-x265
         )
