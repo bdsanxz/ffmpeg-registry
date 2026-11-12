@@ -15,8 +15,8 @@ derived from that manifest and from the built binary's own `-version` / `-filter
 | macOS `x64` (`x64-osx`)        | ✅                | ✅                                                             | ✅                     | Same overlay |
 | Linux `x64` (`x64-linux`)      | ✅                | ✅                                                             | ✅                     | Same overlay |
 | Windows `x64` (`x64-windows`)  | ✅                | ✅                                                             | ✅                     | Same overlay (MSVC `lib.exe` merge) |
-| Android `arm64-v8a`            | ✅                | ✅                                                             | ✅                     | Same overlay (GNU `ar` merge) |
-| Android `x86_64`               | ✅                | ✅                                                             | ✅                     | Same overlay |
+| Android `arm64-v8a`            | ✅                | ⚠️ 8-bit only (multilib pending)                               | ⚠️                     | Excluded: NDK `llvm-ar` merge yields `x265_10bit` undefined symbols — fallback to upstream 8-bit. To be fixed. |
+| Android `x86_64`               | ✅                | ⚠️ 8-bit only                                                  | ⚠️                     | Same (excluded) |
 | Windows `arm64` (planned)      | ❌ (excluded in `vcpkg.json`: `!(windows & arm64)`) | — | — | No `libx265`; use VideoToolbox/AMF/QSV |
 | iOS (`FFmpeg.xcframework`)     | ❌                | —                                                              | —                      | Intentionally LGPL (`--disable-gpl`, no `--enable-libx265`); HEVC via `hevc_videotoolbox` |
 
