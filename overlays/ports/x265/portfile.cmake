@@ -33,7 +33,9 @@ endif()
 # For static linkage we build the canonical 8+10+12 multilib so that
 # FFmpeg's libx265 wrapper reports 10-bit (and 12-bit) pixel formats.
 # Dynamic linkage keeps the upstream single-build behaviour.
-if(NOT VCPKG_LIBRARY_LINKAGE STREQUAL "static")
+# Android is excluded until the NDK llvm-ar + merge path is validated
+# (currently yields undefined x265_10bit symbols at ffmpeg link time).
+if(NOT VCPKG_LIBRARY_LINKAGE STREQUAL "static" OR VCPKG_TARGET_IS_ANDROID)
     string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" ENABLE_SHARED)
     vcpkg_cmake_configure(
         SOURCE_PATH "${SOURCE_PATH}/source"
