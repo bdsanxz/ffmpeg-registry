@@ -207,7 +207,7 @@ if(VCPKG_TARGET_IS_WINDOWS)
         set(LIB_EXE "lib")
     endif()
     vcpkg_execute_required_process(
-        COMMAND "${LIB_EXE}" /NOLOGO /OUT:"${X265_LIB_8}"
+        COMMAND "${LIB_EXE}" /NOLOGO "/OUT:${X265_LIB_8}"
             "${X265_MAIN_LIB_PATH}" "${X265_TEMP_DIR}/${X265_DEST_10}" "${X265_TEMP_DIR}/${X265_DEST_12}"
         WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}"
         LOGNAME merge-x265
@@ -225,6 +225,7 @@ else()
     else()
         # Linux / Android (GNU ar). Use "ar rcs" additive merge to avoid stdin handling.
         find_program(AR_EXE NAMES ar llvm-ar REQUIRED)
+        find_program(RANLIB_EXE NAMES ranlib llvm-ranlib REQUIRED)
         # If the merged file already exists (from 8-bit install), replace it.
         file(REMOVE "${X265_MERGED}")
         # GNU ar: "ar rcs" with multiple archives adds their members.
@@ -244,8 +245,11 @@ else()
             WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}"
             LOGNAME merge-x265
         )
-        # ar on some platforms writes the archive with members; ensure it is not empty
-        # rcs will have appended correctly; GNU ar "rcs" adds archive members as-is.
+        vcpkg_execute_required_process(
+            COMMAND "${RANLIB_EXE}" "${X265_MERGED}"
+            WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}"
+            LOGNAME merge-x265-ranlib
+        )
     endif()
     # Ensure the final path matches the originally installed lib name
     if(NOT X265_LIB_8 STREQUAL X265_MERGED)
