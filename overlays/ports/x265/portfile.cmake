@@ -223,12 +223,22 @@ else()
             LOGNAME merge-x265
         )
     else()
-        # Linux / Android (GNU ar). Use single "ar rcs" + ranlib to merge.
+        # Linux / Android (GNU ar). Merge via "ar -M" (see x265 multilib.sh)
         find_program(AR_EXE NAMES ar llvm-ar REQUIRED)
         find_program(RANLIB_EXE NAMES ranlib llvm-ranlib REQUIRED)
         file(REMOVE "${X265_MERGED}")
+        # GNU ar -M creates archive with proper index from multiple ADDLIBs.
+        file(WRITE "${X265_TEMP_DIR}/ar.mri"
+            "CREATE ${X265_MERGED}\n"
+            "ADDLIB ${X265_MAIN_LIB_PATH}\n"
+            "ADDLIB ${X265_TEMP_DIR}/${X265_DEST_10}\n"
+            "ADDLIB ${X265_TEMP_DIR}/${X265_DEST_12}\n"
+            "SAVE\n"
+            "END\n"
+        )
+        # ar -M reads script from stdin; invoke via sh redirection.
         vcpkg_execute_required_process(
-            COMMAND "${AR_EXE}" rcs "${X265_MERGED}" "${X265_MAIN_LIB_PATH}" "${X265_TEMP_DIR}/${X265_DEST_10}" "${X265_TEMP_DIR}/${X265_DEST_12}"
+            COMMAND sh -c "\"${AR_EXE}\" -M < \"${X265_TEMP_DIR}/ar.mri\""
             WORKING_DIRECTORY "${CURRENT_BUILDTREES_DIR}"
             LOGNAME merge-x265
         )
