@@ -116,9 +116,10 @@ vcpkg_cmake_configure(
         -DENABLE_CLI=OFF
     MAYBE_UNUSED_VARIABLES
         ENABLE_LIBNUMA
+        CMAKE_DISABLE_FIND_PACKAGE_VLD
     LOGNAME configure-12bit
 )
-vcpkg_cmake_build(LOGNAME build-12bit)
+vcpkg_cmake_build()
 vcpkg_cmake_install()
 x265_find_installed_lib(X265_LIB_12)
 # Save copy
@@ -141,9 +142,10 @@ vcpkg_cmake_configure(
         -DENABLE_CLI=OFF
     MAYBE_UNUSED_VARIABLES
         ENABLE_LIBNUMA
+        CMAKE_DISABLE_FIND_PACKAGE_VLD
     LOGNAME configure-10bit
 )
-vcpkg_cmake_build(LOGNAME build-10bit)
+vcpkg_cmake_build()
 vcpkg_cmake_install()
 x265_find_installed_lib(X265_LIB_10)
 if(VCPKG_TARGET_IS_WINDOWS)
@@ -180,9 +182,10 @@ vcpkg_cmake_configure(
         -DENABLE_CLI=OFF
     MAYBE_UNUSED_VARIABLES
         ENABLE_LIBNUMA
+        CMAKE_DISABLE_FIND_PACKAGE_VLD
     LOGNAME configure-8bit
 )
-vcpkg_cmake_build(LOGNAME build-8bit)
+vcpkg_cmake_build()
 vcpkg_cmake_install()
 x265_find_installed_lib(X265_LIB_8)
 if(VCPKG_TARGET_IS_WINDOWS)
