@@ -1,6 +1,6 @@
 # Verify an ffmpeg binary exposes the registry contract:
 #  - libx265 with 10/12-bit pixel formats (multilib)
-#  - volumedetect, loudnorm, eval filters
+#  - volumedetect, loudnorm, aeval (eval) filters
 param(
   [string]$FFmpegPath = ".\ffmpeg.exe"
 )
@@ -47,10 +47,10 @@ Check-Contains "libx265 pixel formats (12-bit 422)" $encoderOut "yuv422p12le"
 
 Check-Contains "filters" $filtersOut "volumedetect"
 Check-Contains "filters" $filtersOut "loudnorm"
-if ($filtersOut -match "eval") {
-  Write-Output "ok: filters contains eval"
+if ($filtersOut -match "aeval") {
+  Write-Output "ok: filters contains aeval (eval evaluator)"
 } else {
-  Write-Output "FAIL: filters missing 'eval'" -ForegroundColor Red
+  Write-Output "FAIL: filters missing 'aeval' (eval evaluator)" -ForegroundColor Red
   $fail = 1
 }
 
@@ -65,7 +65,7 @@ if ($fail -ne 0) {
   Write-Output "--- libx265 ---"
   Write-Output $encoderOut
   Write-Output "--- filters ---"
-  $filtersOut -split "`n" | Select-String "volumedetect|loudnorm|eval" | ForEach-Object { $_.Line }
+  $filtersOut -split "`n" | Select-String "volumedetect|loudnorm|aeval" | ForEach-Object { $_.Line }
   exit 1
 }
 

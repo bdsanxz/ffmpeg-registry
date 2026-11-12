@@ -55,11 +55,11 @@ check "libx265 pixel formats (12-bit 422)" "$ENCODER_OUT" "yuv422p12le"
 # Filter capabilities
 check "filters" "$FILTERS_OUT" "volumedetect"
 check "filters" "$FILTERS_OUT" "loudnorm"
-# eval is both libavutil evaluator and a source filter; grep 'eval'
-if echo "$FILTERS_OUT" | grep -Ei "eval" | grep -q "eval"; then
-    echo "ok: filters contains eval"
+# eval evaluator is exposed as `aeval`/`aevalsrc` (libavutil/eval); check for aeval
+if echo "$FILTERS_OUT" | grep -Ei "aeval" | grep -q "aeval"; then
+    echo "ok: filters contains aeval (eval evaluator)"
 else
-    echo "FAIL: filters missing 'eval'" >&2
+    echo "FAIL: filters missing 'aeval' (eval evaluator)" >&2
     fail=1
 fi
 
@@ -74,8 +74,8 @@ if [ "$fail" -ne 0 ]; then
     echo "FAIL: capabilities verification failed for $FFMPEG" >&2
     echo "--- libx265 ---" >&2
     echo "$ENCODER_OUT" >&2 | head -n 80 >&2
-    echo "--- filters (volumedetect/loudnorm/eval) ---" >&2
-    echo "$FILTERS_OUT" | grep -Ei "volumedetect|loudnorm|eval" >&2 || true
+    echo "--- filters (volumedetect/loudnorm/aeval) ---" >&2
+    echo "$FILTERS_OUT" | grep -Ei "volumedetect|loudnorm|aeval" >&2 || true
     # full version for debugging
     echo "$VERSION_OUT" >&2
     exit 1

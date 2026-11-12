@@ -33,7 +33,7 @@ Check:
 ffmpeg -hide_banner -h encoder=libx265
 # should list yuv420p10le, yuv422p10le, yuv444p10le, gray10, yuv420p12le, yuv422p12le, yuv444p12le, gray12
 ffmpeg -hide_banner -h encoder=libx265 2>&1 | grep -E "yuv420p10le|yuv420p12le"
-ffmpeg -hide_banner -filters | grep -E "volumedetect|loudnorm|eval"
+ffmpeg -hide_banner -filters | grep -E "volumedetect|loudnorm|aeval"
 ```
 
 ## Filter / decoder matrix
@@ -47,7 +47,7 @@ excluded).
 |------------|--------------|----------------------------------------------|-------|
 | `volumedetect` | `volumedetect` (video) `volumedetect` (audio alias) | ✅ | `ffmpeg -filters | grep volumedetect`; uses `libavfilter` only, no external dep. `ffmpeg -i in -vn -af volumedetect -f null -` |
 | `loudnorm` | `loudnorm` (audio) | ✅ | `ffmpeg -filters | grep loudnorm`; requires `libsoxr` for high-quality resampling — enabled via `soxr` feature. `ffmpeg -i in -vn -af loudnorm=print_format=json -f null -` |
-| `eval` (expression) | `eval` (libavutil) + `eval` source filter | ✅ | `ffmpeg -h filter=eval` / `ffmpeg -filter_complex "nullsrc=s=320x240,eval=init_pts='2*PI'"`; always present when `avfilter` is enabled. Behaviour is identical across OSes (IEEE-754 double). |
+| `eval` (expression) | `eval`/`aeval` (libavutil evaluator) + `aeval`/`aevalsrc` | ✅ | `ffmpeg -filters | grep aeval` and `ffmpeg -h filter=aeval`; `libavutil/eval` evaluates `PI`, `E`, `N`, `T`, `t`. Always present when `avfilter` is enabled (IEEE-754 double). Distinct from the removed `eval` video filter name; check is `aeval`. |
 
 ### Subtleties
 
@@ -55,7 +55,7 @@ excluded).
   resampler with lower precision. Registry enables `soxr`, so verification should show
   `--enable-libsoxr` in `ffmpeg -version`.
 * **volumedetect** is sample-accurate regardless of `swresample` configuration.
-* **eval** exposes `PI`, `E` and the `N`, `T`, `t` constants; no platform divergence.
+* **eval / `aeval`** exposes `PI`, `E` and the `N`, `T`, `t` constants (libavutil `eval.c`); no platform divergence.
 
 ## SPDX / License
 
